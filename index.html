@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCG Project Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=Cormorant+Garamond:ital@1&display=swap">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --plum:#5A496B;
+    --lavender:#B4A9D3;
+    --ink:#243059;
+    --rose:#D8C6E0;
+    --sage:#A8B3A2;
+    --camel:#C9A572;
+    --gray:#E5E5E5;
+    --charcoal:#2E2E2E;
+    --red:#C0392B;
+    --amber:#E67E22;
+    --green:#27AE60;
+    --red-bg:#FDECEA;
+    --amber-bg:#FEF3E2;
+    --green-bg:#E9F7EF;
+    --white:#fff;
+    --surface:#FAFAFA;
+  }
+  body{font-family:'Raleway',sans-serif;background:var(--surface);color:var(--charcoal);min-height:100vh;}
+  /* HEADER */
+  .header{background:var(--ink);padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:center;}
+  .header-brand{display:flex;align-items:center;gap:1rem;}
+  .header-logo{font-family:'Raleway',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.08em;}
+  .header-title{font-size:13px;color:var(--lavender);letter-spacing:0.06em;text-transform:uppercase;}
+  .header-date{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:0.04em;}
+  /* KPI BAR */
+  .kpi-bar{background:var(--white);border-bottom:1px solid var(--gray);padding:1rem 2rem;display:flex;gap:2rem;overflow-x:auto;}
+  .kpi{display:flex;flex-direction:column;gap:0.2rem;min-width:fit-content;cursor:pointer;padding:0.4rem 0.6rem;border-radius:3px;border:1.5px solid transparent;transition:all 0.15s;}
+  .kpi:hover{background:rgba(180,169,211,0.1);border-color:var(--lavender);}
+  .kpi.kpi-active{background:rgba(90,73,107,0.07);border-color:var(--plum);}
+  .kpi-n{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;}
+  .kpi-l{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#888;}
+  .kpi-divider{width:1px;background:var(--gray);align-self:stretch;}
+  .kpi-n.red{color:var(--red);}
+  .kpi-n.amber{color:var(--amber);}
+  .kpi-n.green{color:var(--green);}
+  .kpi-n.warn{color:var(--red);}
+  /* TOOLBAR */
+  .toolbar{padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+  .toolbar-left{display:flex;align-items:center;gap:1rem;}
+  .section-title{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;}
+  .btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;font-size:12px;font-weight:600;letter-spacing:0.06em;border-radius:3px;cursor:pointer;border:none;font-family:'Raleway',sans-serif;transition:all 0.15s;}
+  .btn-primary{background:var(--plum);color:#fff;}
+  .btn-primary:hover{background:var(--ink);}
+  .btn-secondary{background:transparent;color:var(--plum);border:1.5px solid var(--plum);}
+  .btn-secondary:hover{background:var(--plum);color:#fff;}
+  .btn-ghost{background:transparent;color:#888;border:1.5px solid var(--gray);}
+  .btn-ghost:hover{border-color:var(--plum);color:var(--plum);}
+  .btn-danger{background:transparent;color:var(--red);border:1.5px solid var(--red);}
+  .btn-danger:hover{background:var(--red);color:#fff;}
+  .btn-sm{padding:0.35rem 0.75rem;font-size:11px;}
+  .filter-group{display:flex;gap:0.5rem;}
+  .filter-btn{padding:0.4rem 0.85rem;font-size:11px;font-weight:600;letter-spacing:0.06em;border-radius:2px;cursor:pointer;border:1.5px solid var(--gray);background:#fff;color:#888;font-family:'Raleway',sans-serif;transition:all 0.15s;}
+  .filter-btn.active{border-color:var(--plum);color:var(--plum);background:rgba(90,73,107,0.06);}
+  /* TABLE */
+  .table-wrap{padding:0 2rem 2rem;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  thead th{background:var(--ink);color:#fff;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:0.85rem 1rem;text-align:left;white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--gray);transition:background 0.1s;}
+  tbody tr:hover{background:rgba(180,169,211,0.05);}
+  tbody tr:last-child{border-bottom:none;}
+  td{padding:0.9rem 1rem;font-size:13px;vertical-align:middle;}
+  td.bold{font-weight:700;color:var(--ink);}
+  .ws-name{font-weight:600;color:var(--charcoal);cursor:pointer;}
+  .ws-name:hover{color:var(--plum);text-decoration:underline;}
+  .ws-phase{font-size:12px;color:#777;}
+  /* RAG */
+  .rag-select{padding:0.3rem 0.5rem;border-radius:3px;font-size:12px;font-weight:600;border:1.5px solid transparent;cursor:pointer;font-family:'Raleway',sans-serif;appearance:none;-webkit-appearance:none;padding-right:1.5rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.4rem center;}
+  .rag-RED{background:var(--red-bg);color:var(--red);border-color:rgba(192,57,43,0.2);}
+  .rag-AMBER{background:var(--amber-bg);color:var(--amber);border-color:rgba(230,126,34,0.2);}
+  .rag-GREEN{background:var(--green-bg);color:var(--green);border-color:rgba(39,174,96,0.2);}
+  /* PILLS */
+  .priority-pill{display:inline-block;padding:0.2rem 0.6rem;border-radius:2px;font-size:11px;font-weight:700;letter-spacing:0.04em;}
+  .priority-High{background:#EDE8F5;color:var(--plum);}
+  .priority-Medium{background:#E8F0FB;color:#2563EB;}
+  .priority-Low{background:var(--green-bg);color:var(--green);}
+  .days-pill{display:inline-block;padding:0.2rem 0.6rem;border-radius:2px;font-size:11px;font-weight:700;}
+  .days-ok{background:var(--green-bg);color:var(--green);}
+  .days-soon{background:var(--amber-bg);color:var(--amber);}
+  .days-due{background:var(--red-bg);color:var(--red);}
+  /* CLOSED / COMPLETED STATE */
+  tbody tr.ws-closed{opacity:0.55;}
+  tbody tr.ws-closed td{text-decoration:none;}
+  tbody tr.ws-closed .ws-name{color:#999;}
+  tbody tr.ws-closed td.bold{color:#999;}
+  .closed-badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.15rem 0.5rem;background:#E9F7EF;color:#27AE60;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:0.04em;}
+  /* ARCHIVE SECTION */
+  .archive-section{padding:0 2rem 2rem;}
+  .archive-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;cursor:pointer;user-select:none;}
+  .archive-title{font-size:13px;font-weight:700;color:#999;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;}
+  .archive-toggle{font-size:11px;color:#bbb;}
+  .archive-table{width:100%;border-collapse:collapse;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .archive-table th{background:#f5f5f5;color:#aaa;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.65rem 1rem;text-align:left;}
+  .archive-table td{padding:0.7rem 1rem;font-size:12px;color:#aaa;border-bottom:1px solid #f0f0f0;}
+  .archive-table tr:last-child td{border-bottom:none;}
+  .archive-empty{font-size:12px;color:#ccc;padding:1.5rem 0;text-align:center;}
+  .archive-actions{display:flex;gap:0.5rem;margin-top:0.75rem;}
+  /* PDF EXPORT */
+  @media print{
+    @page{size:letter landscape;margin:0.5in;}
+    .header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .kpi-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .toolbar,.row-actions,.btn-primary,.archive-actions,.filter-group button,.week-nav{display:none!important;}
+    .week-section{page-break-before:always;padding:0!important;margin:0!important;}
+    .week-day{page-break-inside:avoid;}
+    body{background:#fff!important;}
+    .table-wrap{padding:0 0 2rem 0!important;}
+  }
+  .row-actions{display:flex;gap:0.4rem;opacity:0;transition:opacity 0.15s;align-items:center;}
+  tbody tr:hover .row-actions{opacity:1;}
+  .row-btn{width:26px;height:26px;border-radius:2px;border:1px solid var(--gray);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;}
+  .row-btn:hover{border-color:var(--plum);color:var(--plum);}
+  .row-btn.del{margin-left:6px;border-color:rgba(192,57,43,0.3);color:rgba(192,57,43,0.5);}
+  .row-btn.del:hover{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+  .row-actions-divider{width:1px;height:18px;background:var(--gray);margin:0 2px;}
+  /* SAVE FLASH */
+  @keyframes saveFlash{0%{background:rgba(39,174,96,0.2);}100%{background:transparent;}}
+  .saved-flash{animation:saveFlash 0.8s ease-out;}
+  /* EXPAND ROW */
+  .expand-row{background:rgba(180,169,211,0.04);}
+  .expand-content{padding:1.25rem 1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;}
+  .expand-section h4{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--plum);margin-bottom:0.75rem;}
+  .resource-list{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem;}
+  .resource-item{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:#fff;border:1px solid var(--gray);border-radius:2px;font-size:12px;}
+  .resource-remove{background:none;border:none;cursor:pointer;color:#bbb;font-size:14px;line-height:1;padding:0 0.2rem;}
+  .resource-remove:hover{color:var(--red);}
+  .add-resource-row{display:flex;gap:0.5rem;}
+  .inline-input{padding:0.4rem 0.65rem;border:1.5px solid var(--gray);border-radius:2px;font-size:12px;font-family:'Raleway',sans-serif;color:var(--charcoal);flex:1;}
+  .inline-input:focus{outline:none;border-color:var(--plum);}
+  .notes-area{width:100%;padding:0.65rem 0.75rem;border:1.5px solid var(--gray);border-radius:2px;font-size:12px;font-family:'Raleway',sans-serif;color:var(--charcoal);resize:vertical;min-height:80px;line-height:1.6;}
+  .notes-area:focus{outline:none;border-color:var(--plum);}
+  .notes-save{margin-top:0.5rem;}
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(36,48,89,0.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+  .modal{background:#fff;border-radius:4px;padding:2rem;width:100%;max-width:600px;box-shadow:0 8px 32px rgba(0,0,0,0.18);}
+  .modal-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:1.5rem;letter-spacing:-0.01em;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  .form-field{display:flex;flex-direction:column;gap:0.4rem;}
+  .form-field.full{grid-column:1/-1;}
+  label{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#777;}
+  .form-input{padding:0.65rem 0.75rem;border:1.5px solid var(--gray);border-radius:2px;font-size:13px;font-family:'Raleway',sans-serif;color:var(--charcoal);}
+  .form-input:focus{outline:none;border-color:var(--plum);}
+  select.form-input{cursor:pointer;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.75rem;}
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:4rem 2rem;color:#aaa;}
+  .empty-state p{font-size:14px;margin-top:0.5rem;}
+  /* SORT INDICATOR */
+  th[data-sort]{cursor:pointer;user-select:none;}
+  th[data-sort]:hover{background:rgba(255,255,255,0.1);}
+  /* NEXT ACTION CELL */
+  .next-action-cell{max-width:220px;}
+  .next-action-text{display:block;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;cursor:pointer;transition:all 0.15s;}
+  .next-action-text.expanded{white-space:normal;overflow:visible;max-width:320px;background:#fff;border:1px solid var(--lavender);border-radius:3px;padding:0.4rem 0.6rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);position:relative;z-index:10;color:var(--charcoal);}
+  .next-action-text:hover{color:var(--plum);}
+
+  /* WEEK AT A GLANCE - SPACIOUS SINGLE WEEK */
+  .week-section{padding:2rem;}
+  .week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+  .week-header-left{display:flex;flex-direction:column;gap:0.5rem;}
+  .week-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;}
+  .week-subtitle{font-size:13px;color:#888;}
+  .week-nav{display:flex;gap:0.75rem;align-items:center;}
+  .week-nav-btn{padding:0.5rem 1rem;font-size:12px;font-weight:600;border-radius:3px;border:1.5px solid var(--gray);background:#fff;cursor:pointer;color:var(--plum);transition:all 0.15s;}
+  .week-nav-btn:hover{border-color:var(--plum);background:rgba(90,73,107,0.05);}
+  .week-nav-btn.disabled{opacity:0.4;cursor:not-allowed;}
+
+  .week-grid{display:grid;grid-template-columns:repeat(7, 1fr);gap:1rem;}
+
+  .week-day{background:#fff;border:1px solid var(--gray);border-radius:4px;padding:1.25rem 1rem;min-height:280px;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:all 0.2s;}
+  .week-day:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1);border-color:var(--lavender);}
+  .week-day.today{border:2px solid var(--plum);box-shadow:0 0 0 3px rgba(90,73,107,0.08);background:rgba(90,73,107,0.02);}
+
+  .week-day-header{margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:2px solid var(--gray);}
+  .week-day-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#999;margin-bottom:0.35rem;}
+  .week-day-date{font-size:28px;font-weight:700;color:var(--ink);line-height:1;}
+  .week-day.today .week-day-date{color:var(--plum);}
+
+  .week-day-content{display:flex;flex-direction:column;gap:0.6rem;flex:1;}
+
+  .week-event{padding:0.6rem 0.75rem;border-radius:3px;font-size:11px;font-weight:600;line-height:1.4;cursor:pointer;transition:all 0.15s;position:relative;border:1px solid;}
+  .week-event:hover{transform:translateY(-2px);box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+
+  .week-event.block{border-left:4px solid;background:#f9f9f9;display:flex;flex-direction:column;gap:0.2rem;}
+  .week-event.block-writing{background:#E8F5EF;color:#1E7A48;border-color:#27AE60;}
+  .week-event.block-study{background:#EDE8F5;color:var(--plum);border-color:var(--plum);}
+  .week-event.block-planning{background:#E8F0FB;color:#2563EB;border-color:#2563EB;}
+  .week-event.block-review{background:#FEF3E2;color:var(--amber);border-color:var(--amber);}
+  .week-event.block-work{background:#F3F0F8;color:#5A496B;border-color:#B4A9D3;}
+
+  .week-event.deadline{background:var(--red-bg);color:var(--red);border:2px solid var(--red);font-weight:700;}
+
+  .week-block-time{font-weight:700;font-size:10px;}
+  .week-block-label{font-size:11px;}
+  .week-block-ws{font-size:9px;opacity:0.75;text-transform:uppercase;letter-spacing:0.04em;}
+
+  .week-add-btn{width:100%;padding:0.75rem;border:2px dashed var(--lavender);background:transparent;border-radius:3px;font-size:12px;color:var(--plum);font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s;margin-top:auto;}
+  .week-add-btn:hover{background:rgba(180,169,211,0.08);border-color:var(--plum);}
+
+  /* BLOCK EDITOR POPUP */
+  .block-editor{position:absolute;background:#fff;border:1.5px solid var(--plum);border-radius:3px;padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:100;min-width:280px;animation:slideIn 0.2s ease-out;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  .block-editor input,.block-editor select{width:100%;padding:0.5rem;margin:0.4rem 0;border:1.5px solid var(--gray);border-radius:2px;font-size:12px;font-family:'Raleway',sans-serif;}
+  .block-editor input:focus,.block-editor select:focus{outline:none;border-color:var(--plum);}
+  .block-editor-actions{display:flex;gap:0.4rem;margin-top:0.75rem;}
+  .block-editor-actions button{flex:1;padding:0.4rem;font-size:11px;font-weight:600;border:none;border-radius:2px;cursor:pointer;font-family:'Raleway',sans-serif;}
+  .block-editor-save{background:var(--plum);color:#fff;}
+  .block-editor-save:hover{background:var(--ink);}
+  .block-editor-cancel{background:var(--gray);color:#666;}
+  .block-editor-cancel:hover{background:#ddd;}
+  .block-editor-delete{background:var(--red-bg);color:var(--red);border:1px solid var(--red);}
+  .block-editor-delete:hover{background:var(--red);color:#fff;}
+
+  .health-badge{display:inline-flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;border-radius:3px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+  .health-RED{background:var(--red-bg);color:var(--red);border:1.5px solid rgba(192,57,43,0.25);}
+  .health-AMBER{background:var(--amber-bg);color:var(--amber);border:1.5px solid rgba(230,126,34,0.25);}
+  .health-GREEN{background:var(--green-bg);color:var(--green);border:1.5px solid rgba(39,174,96,0.25);}
+  .health-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .health-RED .health-dot{background:var(--red);}
+  .health-AMBER .health-dot{background:var(--amber);}
+  .health-GREEN .health-dot{background:var(--green);}
+
+  /* INLINE EDITING */
+  .inline-cell{cursor:pointer;border-radius:2px;padding:2px 4px;margin:-2px -4px;transition:background 0.1s;}
+  .inline-cell:hover{background:rgba(180,169,211,0.15);outline:1px dashed var(--lavender);}
+  .inline-edit-input{padding:0.25rem 0.4rem;border:1.5px solid var(--plum);border-radius:2px;font-size:13px;font-family:'Raleway',sans-serif;color:var(--charcoal);background:#fff;width:100%;min-width:80px;outline:none;box-shadow:0 0 0 3px rgba(90,73,107,0.12);}
+  .inline-edit-input[type="date"]{min-width:130px;}
+  select.inline-edit-input{cursor:pointer;}
+
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--lavender);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-brand">
+    <span class="header-logo">KCG</span>
+    <span class="header-title">Project Dashboard</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:1.25rem;">
+    <div id="healthBadge"></div>
+    <span class="header-date" id="headerDate"></span>
+  </div>
+</div>
+<div class="kpi-bar" id="kpiBar"></div>
+<div class="toolbar">
+  <div class="toolbar-left">
+    <span class="section-title">Workstreams</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL',this)">All</button>
+      <button class="filter-btn" data-filter="RED" onclick="setFilter('RED',this)">🔴 Red</button>
+      <button class="filter-btn" data-filter="AMBER" onclick="setFilter('AMBER',this)">🟡 Amber</button>
+      <button class="filter-btn" data-filter="GREEN" onclick="setFilter('GREEN',this)">🟢 Green</button>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="openModal()">+ Add Workstream</button>
+</div>
+<div class="table-wrap">
+  <table id="wsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phase</th>
+        <th>RAG</th>
+        <th>Priority</th>
+        <th data-sort="deadline" onclick="sortBy('deadline')">Deadline ↕</th>
+        <th>Days</th>
+        <th>Next Action</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="wsBody"></tbody>
+  </table>
+  <div id="emptyState" class="empty-state" style="display:none;">
+    <div style="font-size:32px;">📋</div>
+    <p>No workstreams yet. Click <strong>+ Add Workstream</strong> to get started.</p>
+  </div>
+</div>
+
+<!-- WEEK AT A GLANCE - PROFESSIONAL SINGLE WEEK VIEW -->
+<div class="week-section">
+  <div class="week-header">
+    <div class="week-header-left">
+      <div class="week-title">Week at a Glance</div>
+      <div class="week-subtitle" id="weekRange"></div>
+    </div>
+    <div class="week-nav">
+      <button class="week-nav-btn" id="prevWeekBtn" onclick="goToPreviousWeek()">← Previous</button>
+      <button class="week-nav-btn" onclick="goToThisWeek()" style="min-width:70px;">Today</button>
+      <button class="week-nav-btn" id="nextWeekBtn" onclick="goToNextWeek()">Next →</button>
+    </div>
+  </div>
+  <div class="week-grid" id="weekGrid"></div>
+</div>
+
+<!-- ARCHIVE -->
+<div class="archive-section" id="archiveSection">
+  <div class="archive-header" onclick="toggleArchive()">
+    <div class="archive-title">
+      <span>✓</span>
+      <span>Completed Workstreams</span>
+      <span id="archiveCount" style="background:#e5e5e5;color:#999;padding:0.1rem 0.5rem;border-radius:10px;font-size:10px;">0</span>
+    </div>
+    <span class="archive-toggle" id="archiveToggleIcon">▼ Show</span>
+  </div>
+  <div id="archiveBody" style="display:none;">
+    <table class="archive-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Closed</th>
+          <th>Priority</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="archiveTableBody"></tbody>
+    </table>
+    <div class="archive-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportPDF()">⬇ Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add Workstream</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>ID</label>
+        <input class="form-input" id="fId" placeholder="WS-01" maxlength="10">
+      </div>
+      <div class="form-field">
+        <label>Priority</label>
+        <select class="form-input" id="fPriority">
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Name</label>
+        <input class="form-input" id="fName" placeholder="Workstream name">
+      </div>
+      <div class="form-field">
+        <label>Phase</label>
+        <select class="form-input" id="fPhase">
+          <option value="Initiating">Initiating</option>
+          <option value="Planning">Planning</option>
+          <option value="Executing">Executing</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>RAG Status</label>
+        <select class="form-input" id="fRag">
+          <option value="GREEN">🟢 Green</option>
+          <option value="AMBER">🟡 Amber</option>
+          <option value="RED">🔴 Red</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Deadline</label>
+        <input class="form-input" type="date" id="fDeadline">
+      </div>
+      <div class="form-field full">
+        <label>Next Action</label>
+        <input class="form-input" id="fNext" placeholder="What happens next?">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveWorkstream()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'kcg_dashboard_v2';
+const BLOCKS_KEY = 'kcg_time_blocks';
+let data = loadData();
+let editingId = null;
+let activeFilter = 'ALL';
+let expandedRows = new Set();
+let currentWeekStart = getMonday(new Date());
+let activeBlockEditor = null;
+
+// ─── WEEK NAVIGATION ──────────────────────────────────────────────────────────
+function getMonday(d) {
+  d = new Date(d);
+  const dow = d.getDay();
+  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+  d.setHours(0,0,0,0);
+  return d;
+}
+function goToThisWeek() {
+  currentWeekStart = getMonday(new Date());
+  render();
+}
+function goToPreviousWeek() {
+  currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+  render();
+}
+function goToNextWeek() {
+  currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  render();
+}
+
+function loadBlocks() {
+  try {
+    const raw = localStorage.getItem(BLOCKS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return [
+    { id:'b01', wsId:'WS-08', label:'Writing Block', day:3, startTime:'8:00', endTime:'10:00', type:'writing' },
+    { id:'b02', wsId:'WS-08', label:'Writing Block', day:4, startTime:'8:00', endTime:'10:00', type:'writing' },
+    { id:'b03', wsId:'WS-04', label:'PMP Study', day:1, startTime:'9:00', endTime:'14:00', type:'study' },
+    { id:'b04', wsId:'WS-04', label:'PMP Study', day:3, startTime:'9:00', endTime:'14:00', type:'study' },
+    { id:'b05', wsId:'WS-04', label:'PMP Study', day:4, startTime:'9:00', endTime:'14:00', type:'study' },
+    { id:'b06', wsId:'ALL',   label:'Weekly Planning', day:0, startTime:'9:00', endTime:'10:00', type:'planning' },
+    { id:'b07', wsId:'ALL',   label:'Weekly Review', day:4, startTime:'14:00', endTime:'15:00', type:'review' },
+    { id:'b08', wsId:'WS-06', label:'Content Creation', day:1, startTime:'10:00', endTime:'12:00', type:'work' },
+    { id:'b09', wsId:'WS-06', label:'Content Creation', day:2, startTime:'10:00', endTime:'12:00', type:'work' },
+    { id:'b10', wsId:'WS-07', label:'Podcast Prep', day:2, startTime:'13:00', endTime:'15:00', type:'work' },
+  ];
+}
+let blocks = loadBlocks();
+function saveBlocks() {
+  localStorage.setItem(BLOCKS_KEY, JSON.stringify(blocks));
+}
+function addBlock(wsId, label, day, startTime, endTime, type) {
+  const id = 'b' + Date.now();
+  blocks.push({ id, wsId, label, day: parseInt(day), startTime, endTime, type: type || 'work' });
+  saveBlocks();
+  render();
+}
+function removeBlock(id) {
+  blocks = blocks.filter(b => b.id !== id);
+  saveBlocks();
+  render();
+}
+function updateBlock(id, updates) {
+  const b = blocks.find(x => x.id === id);
+  if (b) Object.assign(b, updates);
+  saveBlocks();
+  render();
+}
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.workstreams && parsed.workstreams.length > 0) return parsed;
+    }
+  } catch(e) {}
+  let oldRag = {};
+  try { oldRag = JSON.parse(localStorage.getItem('kcg_rag')) || {}; } catch(e) {}
+  const seed = [
+    {
+      id:'WS-01', name:'KCG Website Punch List', phase:'Executing',
+      rag: oldRag['WS-01'] || 'GREEN', priority:'High', deadline:'2026-03-20',
+      next:'Draft credibility content; source & finalize testimonials. Mobile testing + voice fixes to follow.',
+      resources:[], log:[], notes:''
+    },
+    {
+      id:'WS-02', name:'UN Submissions', phase:'Executing → Closing',
+      rag: oldRag['WS-02'] || 'GREEN', priority:'High', deadline:'2026-03-19',
+      next:'Submit Wave 5. Initiate follow-up log for Waves 1–4.',
+      resources:[], log:[], notes:''
+    },
+    {
+      id:'WS-03', name:'Nonprofit Applications', phase:'Initiating',
+      rag: oldRag['WS-03'] || 'AMBER', priority:'High', deadline:null,
+      next:'Complete application inventory. Prioritize by deadline and fit. Schedule tasks into calendar.',
+      resources:[], log:[], notes:''
+    },
+    {
+      id:'WS-04', name:'PMP Exam Prep', phase:'Planning',
+      rag: oldRag['WS-04'] || 'AMBER', priority:'High', deadline:'2026-07-09',
+      next:'Register for exam via PMI.org. Run diagnostic test. Schedule 5–7 hrs/week study blocks.',
+      resources:[], log:[], notes:''
+    },
+    {
+      id:'WS-05', name:'Project Charter — KCG BD', phase:'Initiating',
+      rag: oldRag['WS-05'] || 'GREEN', priority:'Medium', deadline:'2026-03-20',
+      next:'Draft charter: purpose, objectives, scope, stakeholders, constraints, success criteria.',
+      resources:[], log:[], notes:''
+    },
+    {
+      id:'WS-06', name:'Social — Thought Leadership', phase:'Planning',
+      rag:'AMBER', priority:'Medium', deadline:'2026-06-30',
+      next:'Audit channels, finalize editorial calendar, activate scheduler. Content bank 8–10 pieces by Mar 27.',
+      resources:['Substack','LinkedIn','Instagram','Facebook'], log:[], notes:'Bi-weekly Substack (Thu). LinkedIn 3x/week. Instagram 2x/week. Cross-post to Facebook.'
+    },
+    {
+      id:'WS-07', name:'Podcast — Pilot Season', phase:'Initiating',
+      rag:'AMBER', priority:'Medium', deadline:'2026-05-01',
+      next:'Format decisions, platform selection, guest list (target 8). First 3 episodes recorded by Apr 23.',
+      resources:[], log:[], notes:'6 episodes pilot. 35–45 min. 70% guest / 30% solo. Bi-weekly release starting May 1.'
+    },
+    {
+      id:'WS-08', name:'Leadership Book 1', phase:'Executing',
+      rag:'AMBER', priority:'High', deadline:'2026-08-31',
+      next:'Complete full chapter outline by Mar 26. Begin Chapter 1 draft. Thu/Fri 8–10am writing blocks.',
+      resources:[], log:[], notes:'80,000–100,000 words. 10 hrs/week minimum. Writing blocks: Thu & Fri 8–10am.'
+    }
+  ];
+  return { workstreams: seed };
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getWS(id) {
+  return data.workstreams.find(w => w.id === id);
+}
+// ─── DATE UTILS ──────────────────────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function daysUntil(d) {
+  if (!d) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const dt = new Date(d + 'T00:00:00');
+  return Math.round((dt - now) / 86400000);
+}
+function daysPill(days) {
+  if (days === null) return '<span class="days-pill days-ok">—</span>';
+  if (days < 0) return `<span class="days-pill days-due">DUE</span>`;
+  if (days <= 7) return `<span class="days-pill days-due">${days}d</span>`;
+  if (days <= 21) return `<span class="days-pill days-soon">${days}d</span>`;
+  return `<span class="days-pill days-ok">${days}d</span>`;
+}
+function todayStr() {
+  return new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+}
+// ─── KPI BAR ─────────────────────────────────────────────────────────────────
+function kpiClick(filterVal) {
+  const filterMap = { 'ALL':'ALL', 'RED':'RED', 'AMBER':'AMBER', 'GREEN':'GREEN', 'OVERDUE':'OVERDUE', 'HIGH':'HIGH' };
+  activeFilter = filterMap[filterVal] || 'ALL';
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === activeFilter);
+  });
+  document.querySelectorAll('.kpi').forEach(k => k.classList.remove('kpi-active'));
+  const activeKpi = document.querySelector(`.kpi[data-kpi="${filterVal}"]`);
+  if (activeKpi) activeKpi.classList.add('kpi-active');
+  render();
+}
+function renderKPI() {
+  const ws = data.workstreams;
+  const total = ws.length;
+  const red = ws.filter(w => w.rag === 'RED').length;
+  const amber = ws.filter(w => w.rag === 'AMBER').length;
+  const green = ws.filter(w => w.rag === 'GREEN').length;
+  const due = ws.filter(w => { const d = daysUntil(w.deadline); return d !== null && d < 0; }).length;
+  const high = ws.filter(w => w.priority === 'High').length;
+  const health = red > 0 ? 'RED' : amber > 0 ? 'AMBER' : 'GREEN';
+  const healthLabel = { RED:'At Risk', AMBER:'Monitor', GREEN:'On Track' }[health];
+  const badge = document.getElementById('healthBadge');
+  if (badge) {
+    badge.className = `health-badge health-${health}`;
+    badge.innerHTML = `<span class="health-dot"></span>Portfolio: ${healthLabel}`;
+  }
+  const bar = document.getElementById('kpiBar');
+  bar.innerHTML = '';
+  const items = [
+    { val:'ALL',     n: total, label:'Total',         cls:'' },
+    { val:'RED',     n: red,   label:'Red',            cls:'red' },
+    { val:'AMBER',   n: amber, label:'Amber',          cls:'amber' },
+    { val:'GREEN',   n: green, label:'Green',          cls:'green' },
+    { val:'OVERDUE', n: due,   label:'Overdue',        cls: due > 0 ? 'warn' : '' },
+    { val:'HIGH',    n: high,  label:'High Priority',  cls:'' },
+    { val:'CLOSED',  n: data.workstreams.filter(w => w.phase === 'Closed').length, label:'Closed', cls:'green' },
+  ];
+  items.forEach((item, i) => {
+    if (i > 0) {
+      const div = document.createElement('div');
+      div.className = 'kpi-divider';
+      bar.appendChild(div);
+    }
+    const kpi = document.createElement('div');
+    kpi.className = 'kpi' + (activeFilter === item.val ? ' kpi-active' : '');
+    kpi.dataset.kpi = item.val;
+    kpi.title = `Filter by ${item.label}`;
+    kpi.addEventListener('click', () => kpiClick(item.val));
+    kpi.innerHTML = `<span class="kpi-n ${item.cls}">${item.n}</span><span class="kpi-l">${item.label}</span>`;
+    bar.appendChild(kpi);
+  });
+}
+// ─── TABLE ────────────────────────────────────────────────────────────────────
+function filteredWS() {
+  if (activeFilter === 'ALL') return data.workstreams.filter(w => w.phase !== 'Closed');
+  if (activeFilter === 'CLOSED') return data.workstreams.filter(w => w.phase === 'Closed');
+  if (activeFilter === 'OVERDUE') return data.workstreams.filter(w => { const d = daysUntil(w.deadline); return d !== null && d < 0 && w.phase !== 'Closed'; });
+  if (activeFilter === 'HIGH') return data.workstreams.filter(w => w.priority === 'High' && w.phase !== 'Closed');
+  return data.workstreams.filter(w => w.rag === activeFilter && w.phase !== 'Closed');
+}
+
+// ─── WEEK AT A GLANCE - SPACIOUS SINGLE WEEK ──────────────────────────────────
+function renderWeek() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(currentWeekStart.getDate() + 6);
+
+  const rangeEl = document.getElementById('weekRange');
+  rangeEl.textContent = `${currentWeekStart.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${weekEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+
+  const grid = document.getElementById('weekGrid');
+  while (grid.firstChild) grid.removeChild(grid.firstChild);
+
+  for (let i = 0; i < 7; i++) {
+    const dayDate = new Date(currentWeekStart);
+    dayDate.setDate(currentWeekStart.getDate() + i);
+    const isToday = dayDate.getTime() === now.getTime();
+    const dateStr = `${dayDate.getFullYear()}-${String(dayDate.getMonth()+1).padStart(2,'0')}-${String(dayDate.getDate()).padStart(2,'0')}`;
+
+    const col = document.createElement('div');
+    col.className = 'week-day' + (isToday ? ' today' : '');
+    col.dataset.date = dateStr;
+    col.dataset.dayIndex = i;
+
+    const header = document.createElement('div');
+    header.className = 'week-day-header';
+    const label = document.createElement('div');
+    label.className = 'week-day-label';
+    label.textContent = days[i];
+    const dateNum = document.createElement('div');
+    dateNum.className = 'week-day-date';
+    dateNum.textContent = dayDate.getDate();
+    header.appendChild(label);
+    header.appendChild(dateNum);
+    col.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = 'week-day-content';
+
+    // Add time blocks for this day (sorted by start time)
+    const dayBlocks = blocks.filter(b => b.day === i).sort((a,b) => a.startTime.localeCompare(b.startTime));
+    dayBlocks.forEach(b => {
+      const ev = document.createElement('div');
+      ev.className = `week-event block block-${b.type}`;
+      const wsLabel = b.wsId === 'ALL' ? '' : `<div class="week-block-ws">${b.wsId}</div>`;
+      ev.innerHTML = `<div class="week-block-time">${b.startTime}</div><div class="week-block-label">${b.label}</div>${wsLabel}`;
+      ev.title = `${b.startTime}–${b.endTime} · ${b.label}${b.wsId !== 'ALL' ? ` (${b.wsId})` : ''}\nClick to edit`;
+      ev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openBlockEditor(b, ev);
+      });
+      content.appendChild(ev);
+    });
+
+    // Add deadlines on this day
+    data.workstreams.forEach(w => {
+      if (w.deadline === dateStr) {
+        const ev = document.createElement('div');
+        ev.className = 'week-event deadline';
+        ev.innerHTML = `<strong>⚑ ${w.id} Due</strong><div style="font-size:9px;margin-top:2px;">${w.name}</div>`;
+        ev.title = `${w.name} deadline`;
+        content.appendChild(ev);
+      }
+    });
+
+    // Add "+" button to add new block
+    const addBtn = document.createElement('button');
+    addBtn.className = 'week-add-btn';
+    addBtn.textContent = '+ Add Time Block';
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newBlock = { id: 'b' + Date.now(), wsId: 'WS-01', label: 'New Block', day: i, startTime: '9:00', endTime: '10:00', type: 'work' };
+      openBlockEditor(newBlock, addBtn, true);
+    });
+    content.appendChild(addBtn);
+
+    col.appendChild(content);
+    grid.appendChild(col);
+  }
+}
+
+function openBlockEditor(block, elem, isNew = false) {
+  if (activeBlockEditor) activeBlockEditor.remove();
+
+  const editor = document.createElement('div');
+  editor.className = 'block-editor';
+
+  const wsOptions = ['ALL', ...data.workstreams.map(w => w.id)];
+  const typeOptions = ['work', 'writing', 'study', 'planning', 'review'];
+
+  editor.innerHTML = `
+    <input type="text" id="beLabel" placeholder="Block Label" value="${block.label}" />
+    <select id="beWsId">
+      ${wsOptions.map(id => `<option value="${id}" ${id === block.wsId ? 'selected' : ''}>${id}</option>`).join('')}
+    </select>
+    <input type="time" id="beStart" value="${block.startTime}" />
+    <input type="time" id="beEnd" value="${block.endTime}" />
+    <select id="beType">
+      ${typeOptions.map(t => `<option value="${t}" ${t === block.type ? 'selected' : ''}>${t}</option>`).join('')}
+    </select>
+    <div class="block-editor-actions">
+      <button class="block-editor-save">Save</button>
+      ${!isNew ? '<button class="block-editor-delete">Delete</button>' : ''}
+      <button class="block-editor-cancel">Cancel</button>
+    </div>
+  `;
+
+  elem.parentElement.appendChild(editor);
+  activeBlockEditor = editor;
+
+  const saveBtn = editor.querySelector('.block-editor-save');
+  const deleteBtn = editor.querySelector('.block-editor-delete');
+  const cancelBtn = editor.querySelector('.block-editor-cancel');
+
+  saveBtn.addEventListener('click', () => {
+    const label = editor.querySelector('#beLabel').value.trim();
+    const wsId = editor.querySelector('#beWsId').value;
+    const start = editor.querySelector('#beStart').value;
+    const end = editor.querySelector('#beEnd').value;
+    const type = editor.querySelector('#beType').value;
+
+    if (!label || !start) { alert('Label and start time required'); return; }
+
+    if (isNew) {
+      addBlock(wsId, label, block.day, start, end, type);
+    } else {
+      updateBlock(block.id, { wsId, label, startTime: start, endTime: end, type });
+    }
+    activeBlockEditor = null;
+  });
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      if (confirm('Delete this block?')) {
+        removeBlock(block.id);
+        activeBlockEditor = null;
+      }
+    });
+  }
+
+  cancelBtn.addEventListener('click', () => {
+    editor.remove();
+    activeBlockEditor = null;
+  });
+
+  editor.querySelector('#beLabel').focus();
+}
+
+// ─── ARCHIVE ──────────────────────────────────────────────────────────────────
+let archiveOpen = false;
+function toggleArchive() {
+  archiveOpen = !archiveOpen;
+  document.getElementById('archiveBody').style.display = archiveOpen ? 'block' : 'none';
+  document.getElementById('archiveToggleIcon').textContent = archiveOpen ? '▲ Hide' : '▼ Show';
+}
+function renderArchive() {
+  const closed = data.workstreams.filter(w => w.phase === 'Closed');
+  const countEl = document.getElementById('archiveCount');
+  if (countEl) countEl.textContent = closed.length;
+  const tbody = document.getElementById('archiveTableBody');
+  if (!tbody) return;
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  if (closed.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 6;
+    td.className = 'archive-empty';
+    td.textContent = 'No completed workstreams yet.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+  closed.forEach(w => {
+    const tr = document.createElement('tr');
+    const tdId = document.createElement('td');
+    tdId.style.fontWeight = '700';
+    tdId.textContent = w.id;
+    const tdName = document.createElement('td');
+    tdName.textContent = w.name;
+    const tdClosed = document.createElement('td');
+    tdClosed.textContent = w.closedDate || '—';
+    const tdPriority = document.createElement('td');
+    tdPriority.textContent = w.priority;
+    const tdNotes = document.createElement('td');
+    tdNotes.style.cssText = 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    tdNotes.textContent = w.notes || '—';
+    tdNotes.title = w.notes || '';
+    const tdActions = document.createElement('td');
+    const reopenBtn = document.createElement('button');
+    reopenBtn.className = 'btn btn-ghost btn-sm';
+    reopenBtn.textContent = 'Reopen';
+    reopenBtn.addEventListener('click', () => {
+      w.phase = 'Executing';
+      w.closedDate = null;
+      saveData();
+      render();
+    });
+    tdActions.appendChild(reopenBtn);
+    tr.appendChild(tdId);
+    tr.appendChild(tdName);
+    tr.appendChild(tdClosed);
+    tr.appendChild(tdPriority);
+    tr.appendChild(tdNotes);
+    tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+  });
+}
+function exportPDF() {
+  archiveOpen = true;
+  document.getElementById('archiveBody').style.display = 'block';
+  document.getElementById('archiveToggleIcon').textContent = '▲ Hide';
+  setTimeout(() => window.print(), 150);
+}
+function onPhaseChange(wsId, newPhase) {
+  const ws = getWS(wsId);
+  if (!ws) return;
+  ws.phase = newPhase;
+  if (newPhase === 'Closed') {
+    ws.rag = 'GREEN';
+    ws.closedDate = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  } else {
+    ws.closedDate = null;
+  }
+  saveData();
+  render();
+}
+function toggleExpand(id) {
+  if (expandedRows.has(id)) expandedRows.delete(id);
+  else expandedRows.add(id);
+  render();
+}
+function changeRAG(id, val) {
+  const ws = getWS(id);
+  if (ws) { ws.rag = val; saveData(); renderKPI(); }
+}
+function deleteWS(id) {
+  if (!confirm('Delete this workstream? This cannot be undone.')) return;
+  data.workstreams = data.workstreams.filter(w => w.id !== id);
+  expandedRows.delete(id);
+  saveData(); render();
+}
+function addResource(id) {
+  const input = document.getElementById(`resInput_${id}`);
+  if (!input || !input.value.trim()) return;
+  const ws = getWS(id);
+  if (!ws.resources) ws.resources = [];
+  ws.resources.push(input.value.trim());
+  saveData(); render();
+}
+function removeResource(id, idx) {
+  const ws = getWS(id);
+  if (!ws || !ws.resources) return;
+  ws.resources.splice(parseInt(idx), 1);
+  saveData(); render();
+}
+function saveNotes(id) {
+  const textarea = document.getElementById(`notes_${id}`);
+  if (!textarea) return;
+  const ws = getWS(id);
+  if (ws) { ws.notes = textarea.value; saveData(); }
+  const btn = document.getElementById(`saveNotes_${id}`);
+  if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Notes', 1500); }
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modalTitle').textContent = id ? 'Edit Workstream' : 'Add Workstream';
+  if (id) {
+    const ws = getWS(id);
+    document.getElementById('fId').value = ws.id;
+    document.getElementById('fId').disabled = true;
+    document.getElementById('fName').value = ws.name;
+    document.getElementById('fPhase').value = ws.phase;
+    document.getElementById('fRag').value = ws.rag;
+    document.getElementById('fPriority').value = ws.priority;
+    document.getElementById('fDeadline').value = ws.deadline || '';
+    document.getElementById('fNext').value = ws.next || '';
+  } else {
+    document.getElementById('fId').value = autoId();
+    document.getElementById('fId').disabled = false;
+    document.getElementById('fName').value = '';
+    document.getElementById('fPhase').value = 'Planning';
+    document.getElementById('fRag').value = 'GREEN';
+    document.getElementById('fPriority').value = 'Medium';
+    document.getElementById('fDeadline').value = '';
+    document.getElementById('fNext').value = '';
+  }
+  document.getElementById('modalOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('fName').focus(), 50);
+}
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  editingId = null;
+}
+function autoId() {
+  const nums = data.workstreams.map(w => {
+    const m = w.id.match(/\d+/);
+    return m ? parseInt(m[0]) : 0;
+  });
+  const next = nums.length ? Math.max(...nums) + 1 : 1;
+  return `WS-${String(next).padStart(2,'0')}`;
+}
+function saveWorkstream() {
+  const id = document.getElementById('fId').value.trim();
+  const name = document.getElementById('fName').value.trim();
+  const phase = document.getElementById('fPhase').value.trim();
+  const rag = document.getElementById('fRag').value;
+  const priority = document.getElementById('fPriority').value;
+  const deadline = document.getElementById('fDeadline').value || null;
+  const next = document.getElementById('fNext').value.trim();
+  if (!id || !name) { alert('ID and Name are required.'); return; }
+  if (editingId) {
+    const ws = getWS(editingId);
+    ws.name = name;
+    ws.phase = phase;
+    ws.rag = rag;
+    ws.priority = priority;
+    ws.deadline = deadline;
+    ws.next = next;
+  } else {
+    if (getWS(id)) { alert('A workstream with that ID already exists.'); return; }
+    data.workstreams.push({
+      id, name, phase, rag, priority, deadline, next,
+      resources:[], log:[], notes:''
+    });
+  }
+  saveData(); closeModal(); render();
+}
+
+// ─── FILTER & SORT ────────────────────────────────────────────────────────────
+function setFilter(val, btn) {
+  activeFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function sortBy(field) {
+  data.workstreams.sort((a, b) => {
+    if (!a[field]) return 1;
+    if (!b[field]) return -1;
+    return a[field] < b[field] ? -1 : 1;
+  });
+  render();
+}
+
+// ─── TABLE RENDERING (SIMPLIFIED) ──────────────────────────────────────────────
+function renderTable() {
+  const ws = filteredWS();
+  const tbody = document.getElementById('wsBody');
+  const empty = document.getElementById('emptyState');
+  if (ws.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  ws.forEach(w => {
+    const days = daysUntil(w.deadline);
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-wsid', w.id);
+    if (w.phase === 'Closed') tr.classList.add('ws-closed');
+
+    const tdId = document.createElement('td');
+    tdId.className = 'bold';
+    tdId.textContent = w.id;
+
+    const tdName = document.createElement('td');
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'ws-name inline-cell';
+    nameSpan.textContent = w.name;
+    nameSpan.title = 'Click to expand';
+    nameSpan.addEventListener('click', () => toggleExpand(w.id));
+    tdName.appendChild(nameSpan);
+
+    const tdPhase = document.createElement('td');
+    tdPhase.className = 'ws-phase';
+    tdPhase.textContent = w.phase;
+
+    const tdRag = document.createElement('td');
+    const ragSel = document.createElement('select');
+    ragSel.className = `rag-select rag-${w.rag}`;
+    [['RED','🔴 Red'],['AMBER','🟡 Amber'],['GREEN','🟢 Green']].forEach(([val,label]) => {
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = label;
+      if (val === w.rag) opt.selected = true;
+      ragSel.appendChild(opt);
+    });
+    ragSel.addEventListener('change', function() {
+      changeRAG(w.id, this.value);
+      this.className = `rag-select rag-${this.value}`;
+    });
+    tdRag.appendChild(ragSel);
+
+    const tdPriority = document.createElement('td');
+    const priSpan = document.createElement('span');
+    priSpan.className = `priority-pill priority-${w.priority}`;
+    priSpan.textContent = w.priority;
+    tdPriority.appendChild(priSpan);
+
+    const tdDeadline = document.createElement('td');
+    tdDeadline.textContent = formatDate(w.deadline);
+
+    const tdDays = document.createElement('td');
+    tdDays.innerHTML = daysPill(days);
+
+    const tdNext = document.createElement('td');
+    tdNext.className = 'next-action-cell';
+    const nextSpan = document.createElement('span');
+    nextSpan.className = 'next-action-text inline-cell';
+    nextSpan.textContent = w.next || '—';
+    tdNext.appendChild(nextSpan);
+
+    const tdActions = document.createElement('td');
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'row-actions';
+    const expandBtn = document.createElement('button');
+    expandBtn.className = 'row-btn';
+    expandBtn.title = 'Details';
+    expandBtn.textContent = expandedRows.has(w.id) ? '▲' : '▼';
+    expandBtn.addEventListener('click', () => toggleExpand(w.id));
+    const delBtn = document.createElement('button');
+    delBtn.className = 'row-btn del';
+    delBtn.title = 'Delete';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', () => deleteWS(w.id));
+    actionsDiv.appendChild(expandBtn);
+    const divider = document.createElement('div');
+    divider.className = 'row-actions-divider';
+    actionsDiv.appendChild(divider);
+    actionsDiv.appendChild(delBtn);
+    tdActions.appendChild(actionsDiv);
+
+    tr.appendChild(tdId);
+    tr.appendChild(tdName);
+    tr.appendChild(tdPhase);
+    tr.appendChild(tdRag);
+    tr.appendChild(tdPriority);
+    tr.appendChild(tdDeadline);
+    tr.appendChild(tdDays);
+    tr.appendChild(tdNext);
+    tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── KEYBOARD ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    if (activeBlockEditor) { activeBlockEditor.remove(); activeBlockEditor = null; }
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function render() {
+  renderKPI();
+  renderTable();
+  renderArchive();
+  renderWeek();
+}
+
+document.getElementById('headerDate').textContent = todayStr();
+if (!localStorage.getItem(STORAGE_KEY)) saveData();
+if (!localStorage.getItem(BLOCKS_KEY)) saveBlocks();
+render();
+</script>
+</body>
+</html>
