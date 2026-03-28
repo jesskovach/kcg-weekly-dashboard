@@ -158,10 +158,19 @@
   th[data-sort]{cursor:pointer;user-select:none;}
   th[data-sort]:hover{background:rgba(255,255,255,0.1);}
   /* NEXT ACTION CELL */
-  .next-action-cell{max-width:220px;}
+  .next-action-cell{max-width:220px;position:relative;}
   .next-action-text{display:block;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;cursor:pointer;transition:all 0.15s;}
   .next-action-text.expanded{white-space:normal;overflow:visible;max-width:320px;background:#fff;border:1px solid var(--lavender);border-radius:3px;padding:0.4rem 0.6rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);position:relative;z-index:10;color:var(--charcoal);}
   .next-action-text:hover{color:var(--plum);}
+  .next-action-popover{position:absolute;top:100%;left:0;z-index:200;background:#fff;border:1.5px solid var(--plum);border-radius:3px;padding:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:260px;animation:slideIn 0.15s ease-out;}
+  .next-action-popover textarea{width:100%;padding:0.5rem;border:1.5px solid var(--gray);border-radius:2px;font-size:12px;font-family:'Raleway',sans-serif;color:var(--charcoal);resize:vertical;min-height:72px;outline:none;}
+  .next-action-popover textarea:focus{border-color:var(--plum);}
+  .next-action-popover-actions{display:flex;gap:0.4rem;margin-top:0.5rem;}
+  .next-action-popover-actions button{flex:1;padding:0.35rem;font-size:11px;font-weight:600;border:none;border-radius:2px;cursor:pointer;font-family:'Raleway',sans-serif;}
+  .na-save-btn{background:var(--plum);color:#fff;}
+  .na-save-btn:hover{background:var(--ink);}
+  .na-cancel-btn{background:var(--gray);color:#666;}
+  .na-cancel-btn:hover{background:#ddd;}
   /* WEEK AT A GLANCE - SPACIOUS SINGLE WEEK */
   .week-section{padding:2rem;}
   .week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
@@ -204,6 +213,8 @@
   .block-editor-actions button{flex:1;padding:0.4rem;font-size:11px;font-weight:600;border:none;border-radius:2px;cursor:pointer;font-family:'Raleway',sans-serif;}
   .block-editor-save{background:var(--plum);color:#fff;}
   .block-editor-save:hover{background:var(--ink);}
+  .block-editor-duplicate{background:var(--lavender);color:var(--ink);}
+  .block-editor-duplicate:hover{background:var(--plum);color:#fff;}
   .block-editor-cancel{background:var(--gray);color:#666;}
   .block-editor-cancel:hover{background:#ddd;}
   .block-editor-delete{background:var(--red-bg);color:var(--red);border:1px solid var(--red);}
@@ -772,6 +783,7 @@ function openBlockEditor(block, elem, isNew = false) {
     </select>
     <div class="block-editor-actions">
       <button class="block-editor-save">Save</button>
+      ${!isNew ? '<button class="block-editor-duplicate">Duplicate</button>' : ''}
       ${!isNew ? '<button class="block-editor-delete">Delete</button>' : ''}
       <button class="block-editor-cancel">Cancel</button>
     </div>
@@ -779,6 +791,7 @@ function openBlockEditor(block, elem, isNew = false) {
   elem.parentElement.appendChild(editor);
   activeBlockEditor = editor;
   const saveBtn = editor.querySelector('.block-editor-save');
+  const duplicateBtn = editor.querySelector('.block-editor-duplicate');
   const deleteBtn = editor.querySelector('.block-editor-delete');
   const cancelBtn = editor.querySelector('.block-editor-cancel');
   saveBtn.addEventListener('click', () => {
@@ -795,6 +808,18 @@ function openBlockEditor(block, elem, isNew = false) {
     }
     activeBlockEditor = null;
   });
+  if (duplicateBtn) {
+    duplicateBtn.addEventListener('click', () => {
+      const label = editor.querySelector('#beLabel').value.trim();
+      const wsId = editor.querySelector('#beWsId').value;
+      const start = editor.querySelector('#beStart').value;
+      const end = editor.querySelector('#beEnd').value;
+      const type = editor.querySelector('#beType').value;
+      addBlock(wsId, label + ' (copy)', block.day, start, end, type);
+      editor.remove();
+      activeBlockEditor = null;
+    });
+  }
   if (deleteBtn) {
     deleteBtn.addEventListener('click', () => {
       if (confirm('Delete this block?')) {
@@ -1125,29 +1150,50 @@ function renderTable() {
     tdDays.innerHTML = daysPill(days);
     const tdNext = document.createElement('td');
     tdNext.className = 'next-action-cell';
-    const nextInput = document.createElement('input');
-    nextInput.type = 'text';
-    nextInput.className = 'inline-edit-input';
-    nextInput.value = w.next || '';
-    nextInput.placeholder = 'Click to edit next action...';
-    nextInput.addEventListener('change', () => {
-      const ws = getWS(w.id);
-      if (ws) {
-        ws.next = nextInput.value;
-        saveData();
-        render();
-      }
-    });
-    nextInput.addEventListener('blur', () => {
-      if (nextInput.value !== w.next) {
+    const nextSpan = document.createElement('span');
+    nextSpan.className = 'next-action-text';
+    nextSpan.textContent = w.next || 'Click to add...';
+    nextSpan.title = 'Click to edit next action';
+    nextSpan.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Remove any existing popover
+      document.querySelectorAll('.next-action-popover').forEach(p => p.remove());
+      const popover = document.createElement('div');
+      popover.className = 'next-action-popover';
+      const ta = document.createElement('textarea');
+      ta.value = w.next || '';
+      ta.placeholder = 'Enter next action...';
+      const actions = document.createElement('div');
+      actions.className = 'next-action-popover-actions';
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'na-save-btn';
+      saveBtn.textContent = 'Save';
+      saveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const ws = getWS(w.id);
-        if (ws) {
-          ws.next = nextInput.value;
-          saveData();
-        }
-      }
+        if (ws) { ws.next = ta.value; saveData(); }
+        popover.remove();
+        nextSpan.textContent = ta.value || 'Click to add...';
+      });
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'na-cancel-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.remove();
+      });
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      popover.appendChild(ta);
+      popover.appendChild(actions);
+      tdNext.appendChild(popover);
+      ta.focus();
     });
-    tdNext.appendChild(nextInput);
+    // Close popover on outside click
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.next-action-popover').forEach(p => p.remove());
+    }, { once: false });
+    tdNext.appendChild(nextSpan);
     const tdActions = document.createElement('td');
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'row-actions';
