@@ -218,10 +218,10 @@
   .health-GREEN .health-dot{background:var(--green);}
   /* INLINE EDITING */
   .inline-cell{cursor:pointer;border-radius:2px;padding:2px 4px;margin:-2px -4px;transition:background 0.1s;}
-  .inline-cell:hover{background:rgba(180,169,211,0.1);}
+  .inline-cell:hover{background:rgba(180,169,211,0.15);outline:1px dashed var(--lavender);}
   .inline-edit-input{padding:0.35rem 0.5rem;border:1.5px solid var(--gray);border-radius:2px;font-size:13px;font-family:'Raleway',sans-serif;color:var(--charcoal);background:#fff;width:100%;min-width:80px;outline:none;transition:all 0.15s;}
   .inline-edit-input:hover{border-color:var(--lavender);}
-  .inline-edit-input:focus{border-color:var(--plum);}
+  .inline-edit-input:focus{border-color:var(--plum);box-shadow:0 0 0 3px rgba(90,73,107,0.12);}
   .inline-edit-input[type="date"]{min-width:130px;}
   .inline-edit-input[type="text"]{max-width:220px;}
   select.inline-edit-input{cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:1.5rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.4rem center;}
@@ -1085,8 +1085,8 @@ function renderTable() {
     nextInput.type = 'text';
     nextInput.className = 'inline-edit-input';
     nextInput.value = w.next || '';
-    nextInput.placeholder = 'Click to add next action...';
-    nextInput.style.cssText = 'width:100%;max-width:none;';
+    nextInput.placeholder = 'Next action...';
+    nextInput.style.cssText = 'max-width:220px;';
     nextInput.addEventListener('change', () => {
       const ws = getWS(w.id);
       if (ws) {
