@@ -226,6 +226,54 @@
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--lavender);border-radius:3px;}
 </style>
+
+<!-- Vercel Web Analytics - Enhanced Implementation -->
+<script>
+  // Only load analytics on production/deployed environments
+  (function initAnalytics() {
+    const isProduction = 
+      window.location.hostname === 'kcg-weekly-dashboard.vercel.app' ||
+      window.location.hostname.includes('.vercel.app') ||
+      (!window.location.hostname.includes('localhost') && 
+       !window.location.hostname.startsWith('127.'));
+    
+    // Prevent duplicate script loading
+    if (window.__vercelAnalyticsLoaded) return;
+    if (!isProduction) {
+      console.log('[Analytics] Development environment - analytics disabled');
+      return;
+    }
+    
+    // Set flag to prevent duplicates
+    window.__vercelAnalyticsLoaded = true;
+    
+    // Add error logging
+    window.addEventListener('error', function(event) {
+      if (event.filename && event.filename.includes('vercelinsights')) {
+        console.error('[Analytics] Failed to load Vercel Analytics script');
+        // Could send to monitoring service here
+      }
+    });
+    
+    // Create and inject the analytics script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.vercelinsights.com/v1/script.js';
+    script.defer = true;
+    script.async = false;
+    
+    // Track loading success
+    script.onload = function() {
+      console.log('[Analytics] Vercel Web Analytics loaded successfully');
+    };
+    
+    script.onerror = function() {
+      console.error('[Analytics] Failed to load Vercel Web Analytics from CDN');
+    };
+    
+    // Inject into document head
+    document.head.appendChild(script);
+  })();
+</script>
 </head>
 <body>
 <div class="header">
