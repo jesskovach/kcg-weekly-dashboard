@@ -219,9 +219,12 @@
   /* INLINE EDITING */
   .inline-cell{cursor:pointer;border-radius:2px;padding:2px 4px;margin:-2px -4px;transition:background 0.1s;}
   .inline-cell:hover{background:rgba(180,169,211,0.15);outline:1px dashed var(--lavender);}
-  .inline-edit-input{padding:0.25rem 0.4rem;border:1.5px solid var(--plum);border-radius:2px;font-size:13px;font-family:'Raleway',sans-serif;color:var(--charcoal);background:#fff;width:100%;min-width:80px;outline:none;box-shadow:0 0 0 3px rgba(90,73,107,0.12);}
+  .inline-edit-input{padding:0.35rem 0.5rem;border:1.5px solid var(--gray);border-radius:2px;font-size:13px;font-family:'Raleway',sans-serif;color:var(--charcoal);background:#fff;width:100%;min-width:80px;outline:none;transition:all 0.15s;}
+  .inline-edit-input:hover{border-color:var(--lavender);}
+  .inline-edit-input:focus{border-color:var(--plum);box-shadow:0 0 0 3px rgba(90,73,107,0.12);}
   .inline-edit-input[type="date"]{min-width:130px;}
-  select.inline-edit-input{cursor:pointer;}
+  .inline-edit-input[type="text"]{max-width:220px;}
+  select.inline-edit-input{cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:1.5rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.4rem center;}
   ::-webkit-scrollbar{width:6px;height:6px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--lavender);border-radius:3px;}
@@ -878,6 +881,73 @@ function saveNotes(id) {
   const btn = document.getElementById(`saveNotes_${id}`);
   if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Notes', 1500); }
 }
+// ─── INLINE EDITING HELPERS ────────────────────────────────────────────────────
+function createInlinePhaseSelect(id, currentPhase) {
+  const sel = document.createElement('select');
+  sel.className = 'inline-edit-input';
+  sel.style.cssText = 'min-width:100px;';
+  ['Initiating','Planning','Executing','Closed'].forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    if (p === currentPhase) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => {
+    const ws = getWS(id);
+    if (ws) {
+      ws.phase = sel.value;
+      if (sel.value === 'Closed') {
+        ws.rag = 'GREEN';
+        ws.closedDate = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      } else {
+        ws.closedDate = null;
+      }
+      saveData();
+      render();
+    }
+  });
+  sel.addEventListener('blur', () => render());
+  return sel;
+}
+function createInlinePrioritySelect(id, currentPriority) {
+  const sel = document.createElement('select');
+  sel.className = 'inline-edit-input';
+  sel.style.cssText = 'min-width:90px;';
+  ['High','Medium','Low'].forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    if (p === currentPriority) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => {
+    const ws = getWS(id);
+    if (ws) {
+      ws.priority = sel.value;
+      saveData();
+      render();
+    }
+  });
+  sel.addEventListener('blur', () => render());
+  return sel;
+}
+function createInlineDeadlineInput(id, currentDeadline) {
+  const inp = document.createElement('input');
+  inp.type = 'date';
+  inp.className = 'inline-edit-input';
+  inp.value = currentDeadline || '';
+  inp.addEventListener('change', () => {
+    const ws = getWS(id);
+    if (ws) {
+      ws.deadline = inp.value || null;
+      saveData();
+      render();
+    }
+  });
+  inp.addEventListener('blur', () => render());
+  return inp;
+}
 // ─── MODAL ────────────────────────────────────────────────────────────────────
 function openModal(id) {
   editingId = id || null;
@@ -988,7 +1058,7 @@ function renderTable() {
     tdName.appendChild(nameSpan);
     const tdPhase = document.createElement('td');
     tdPhase.className = 'ws-phase';
-    tdPhase.textContent = w.phase;
+    tdPhase.appendChild(createInlinePhaseSelect(w.id, w.phase));
     const tdRag = document.createElement('td');
     const ragSel = document.createElement('select');
     ragSel.className = `rag-select rag-${w.rag}`;
@@ -1004,20 +1074,37 @@ function renderTable() {
     });
     tdRag.appendChild(ragSel);
     const tdPriority = document.createElement('td');
-    const priSpan = document.createElement('span');
-    priSpan.className = `priority-pill priority-${w.priority}`;
-    priSpan.textContent = w.priority;
-    tdPriority.appendChild(priSpan);
+    tdPriority.appendChild(createInlinePrioritySelect(w.id, w.priority));
     const tdDeadline = document.createElement('td');
-    tdDeadline.textContent = formatDate(w.deadline);
+    tdDeadline.appendChild(createInlineDeadlineInput(w.id, w.deadline));
     const tdDays = document.createElement('td');
     tdDays.innerHTML = daysPill(days);
     const tdNext = document.createElement('td');
     tdNext.className = 'next-action-cell';
-    const nextSpan = document.createElement('span');
-    nextSpan.className = 'next-action-text inline-cell';
-    nextSpan.textContent = w.next || '—';
-    tdNext.appendChild(nextSpan);
+    const nextInput = document.createElement('input');
+    nextInput.type = 'text';
+    nextInput.className = 'inline-edit-input';
+    nextInput.value = w.next || '';
+    nextInput.placeholder = 'Next action...';
+    nextInput.style.cssText = 'max-width:220px;';
+    nextInput.addEventListener('change', () => {
+      const ws = getWS(w.id);
+      if (ws) {
+        ws.next = nextInput.value;
+        saveData();
+        render();
+      }
+    });
+    nextInput.addEventListener('blur', () => {
+      if (nextInput.value !== w.next) {
+        const ws = getWS(w.id);
+        if (ws) {
+          ws.next = nextInput.value;
+          saveData();
+        }
+      }
+    });
+    tdNext.appendChild(nextInput);
     const tdActions = document.createElement('td');
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'row-actions';
