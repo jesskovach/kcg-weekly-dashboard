@@ -1130,21 +1130,11 @@ function renderTable() {
     nextInput.className = 'inline-edit-input';
     nextInput.value = w.next || '';
     nextInput.placeholder = 'Click to edit next action...';
-    nextInput.addEventListener('change', () => {
+    nextInput.addEventListener('blur', () => {
       const ws = getWS(w.id);
-      if (ws) {
+      if (ws && nextInput.value !== ws.next) {
         ws.next = nextInput.value;
         saveData();
-        render();
-      }
-    });
-    nextInput.addEventListener('blur', () => {
-      if (nextInput.value !== w.next) {
-        const ws = getWS(w.id);
-        if (ws) {
-          ws.next = nextInput.value;
-          saveData();
-        }
       }
     });
     tdNext.appendChild(nextInput);
